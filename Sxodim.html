@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Давай Сходим! (Sxodim App) — Афиша и Мероприятия</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-hover: #5b4bc4;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f8f9fa;
+            --gray: #636e72;
+            --light-gray: #dfe6e9;
+            --success: #00b894;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --radius: 12px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 500;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* SECTION 1: CALENDAR & EVENTS */
+        .calendar-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+        }
+
+        .calendar-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--gray);
+            padding: 5px 0;
+        }
+
+        .day {
+            padding: 10px 0;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .day:hover:not(.empty) {
+            background-color: var(--light-gray);
+        }
+
+        .day.selected {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .day.has-event::after {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin: 2px auto 0;
+        }
+
+        .day.selected.has-event::after {
+            background-color: white;
+        }
+
+        /* EVENT CARDS */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .event-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .event-content {
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .event-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-info {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-price {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--dark);
+            margin-top: auto;
+            padding-top: 0.8rem;
+        }
+
+        /* SECTION 2: ADD EVENT FORM */
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; }
+
+        /* SECTION 3: ADMIN PANEL */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .admin-table-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-pending { background-color: #ffeaa7; color: #d63031; }
+        .badge-approved { background-color: #55efc4; color: #00b894; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .calendar-layout {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <nav class="navbar">
+            <a href="#" class="logo" onclick="switchTab('calendar-section')">
+                <i class="fa-solid fa-compass"></i> Sxodim App
+            </a>
+            <ul class="nav-links">
+                <li>
+                    <a class="nav-link active" id="nav-calendar" onclick="switchTab('calendar-section')">
+                        <i class="fa-regular fa-calendar-days"></i> Календарь
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" id="nav-add" onclick="switchTab('add-section')">
+                        <i class="fa-solid fa-plus"></i> Добавить событие
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" id="nav-admin" onclick="switchTab('admin-section')">
+                        <i class="fa-solid fa-user-shield"></i> Админка
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- 1. CALENDAR & EVENTS SECTION -->
+        <section id="calendar-section" class="section active">
+            <h1 class="page-title"><i class="fa-solid fa-fire"></i> Афиша событий</h1>
+            <div class="calendar-layout">
+                <!-- Left Sidebar: Calendar -->
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <button class="btn btn-primary" onclick="prevMonth()" style="padding: 0.4rem 0.8rem;"><i class="fa-solid fa-chevron-left"></i></button>
+                        <h3 id="calendar-month-year">Сентябрь 2026</h3>
+                        <button class="btn btn-primary" onclick="nextMonth()" style="padding: 0.4rem 0.8rem;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-days">
+                        <!-- Days generated via JS -->
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="resetDateFilter()">Показать все даты</button>
+                </div>
+
+                <!-- Right Side: Events List -->
+                <div>
+                    <h2 id="selected-date-title" style="margin-bottom: 1rem; font-size: 1.2rem; color: var(--gray);">Все доступные события:</h2>
+                    <div class="events-grid" id="events-list">
+                        <!-- Event Cards generated via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ADD EVENT SECTION -->
+        <section id="add-section" class="section">
+            <div class="form-card">
+                <h1 class="page-title"><i class="fa-solid fa-pen-to-square"></i> Предложить новое событие</h1>
+                <form id="add-event-form" onsubmit="handleFormSubmit(event)">
+                    <div class="form-group">
+                        <label>Название мероприятия</label>
+                        <input type="text" id="event-title" class="form-control" placeholder="Например: Стендап вечер или Концерт" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Категория</label>
+                            <select id="event-category" class="form-control" required>
+                                <option value="Концерт">Концерт</option>
+                                <option value="Стендап">Стендап</option>
+                                <option value="Театр">Театр</option>
+                                <option value="Выставка">Выставка</option>
+                                <option value="Спорт">Спорт</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Дата проведения</label>
+                            <input type="date" id="event-date" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Локация / Адрес</label>
+                            <input type="text" id="event-location" class="form-control" placeholder="Дворец Республики" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Стоимость (KZT)</label>
+                            <input type="text" id="event-price" class="form-control" placeholder="От 5 000 ₸ / Бесплатно" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ссылка на афишу (URL изображения)</label>
+                        <input type="url" id="event-image" class="form-control" placeholder="https://images.unsplash.com/..." required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        <i class="fa-solid fa-paper-plane"></i> Отправить на модерацию
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 3. ADMIN PANEL SECTION -->
+        <section id="admin-section" class="section">
+            <h1 class="page-title"><i class="fa-solid fa-sliders"></i> Панель администратора</h1>
+            
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">Всего событий</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-pending" style="color: var(--warning);">0</div>
+                    <div class="stat-label">На модерации</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-approved" style="color: var(--success);">0</div>
+                    <div class="stat-label">Опубликовано</div>
+                </div>
+            </div>
+
+            <div class="admin-table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Событие</th>
+                            <th>Категория</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // DATA STATE (Initial Mock Events)
+        let events = [
+            {
+                id: 1,
+                title: "StandUp Comedy Night",
+                category: "Стендап",
+                date: "2026-09-29",
+                location: "StandUp Club Almaty",
+                price: "5 000 ₸",
+                image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
+                status: "approved"
+            },
+            {
+                id: 2,
+                title: "Симфонический рок-концерт",
+                category: "Концерт",
+                date: "2026-10-03",
+                location: "Дворец Республики",
+                price: "от 8 000 ₸",
+                image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80",
+                status: "approved"
+            },
+            {
+                id: 3,
+                title: "Выставка современного искусства",
+                category: "Выставка",
+                date: "2026-09-29",
+                location: "Музей Искусств",
+                price: "Бесплатно",
+                image: "https://images.unsplash.com/photo-1531058240690-006c446962d8?auto=format&fit=crop&w=600&q=80",
+                status: "pending"
+            }
+        ];
+
+        let currentDate = new Date(2026, 8, 28); // September 2026
+        let selectedDateStr = null;
+
+        // TAB SWITCHING
+        function switchTab(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            document.getElementById(sectionId).classList.add('active');
+
+            if (sectionId === 'calendar-section') document.getElementById('nav-calendar').classList.add('active');
+            if (sectionId === 'add-section') document.getElementById('nav-add').classList.add('active');
+            if (sectionId === 'admin-section') {
+                document.getElementById('nav-admin').classList.add('active');
+                renderAdminPanel();
+            }
+        }
+
+        // CALENDAR LOGIC
+        function renderCalendar() {
+            const daysContainer = document.getElementById('calendar-days');
+            const monthYearTitle = document.getElementById('calendar-month-year');
+            
+            daysContainer.innerHTML = '';
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+            monthYearTitle.innerText = `${monthNames[month]} ${year}`;
+
+            // Weekday Headers
+            const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+            weekDays.forEach(day => {
+                const el = document.createElement('div');
+                el.className = 'day-name';
+                el.innerText = day;
+                daysContainer.appendChild(el);
+            });
+
+            const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7; // Adjust Monday start
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            // Empty slots
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day empty';
+                daysContainer.appendChild(emptyCell);
+            }
+
+            // Fill days
+            for (let d = 1; d <= totalDays; d++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day';
+                dayCell.innerText = d;
+
+                // Format YYYY-MM-DD
+                const monthFormatted = String(month + 1).padStart(2, '0');
+                const dayFormatted = String(d).padStart(2, '0');
+                const dateStr = `${year}-${monthFormatted}-${dayFormatted}`;
+
+                // Check if has approved event
+                const hasEvent = events.some(e => e.date === dateStr && e.status === 'approved');
+                if (hasEvent) dayCell.classList.add('has-event');
+
+                if (selectedDateStr === dateStr) {
+                    dayCell.classList.add('selected');
+                }
+
+                dayCell.onclick = () => {
+                    selectedDateStr = dateStr;
+                    renderCalendar();
+                    renderEvents();
+                };
+
+                daysContainer.appendChild(dayCell);
+            }
+        }
+
+        function prevMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function resetDateFilter() {
+            selectedDateStr = null;
+            renderCalendar();
+            renderEvents();
+        }
+
+        // RENDER EVENTS LIST
+        function renderEvents() {
+            const listContainer = document.getElementById('events-list');
+            const titleLabel = document.getElementById('selected-date-title');
+            listContainer.innerHTML = '';
+
+            let filtered = events.filter(e => e.status === 'approved');
+
+            if (selectedDateStr) {
+                filtered = filtered.filter(e => e.date === selectedDateStr);
+                titleLabel.innerText = `События на ${selectedDateStr}:`;
+            } else {
+                titleLabel.innerText = 'Все доступные события:';
+            }
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<p style="color: var(--gray); grid-column: 1/-1;">На эту дату мероприятий не найдено.</p>';
+                return;
+            }
+
+            filtered.forEach(event => {
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.innerHTML = `
+                    <img src="${event.image}" class="event-img" alt="${event.title}">
+                    <div class="event-content">
+                        <span class="event-category">${event.category}</span>
+                        <h3 class="event-title">${event.title}</h3>
+                        <div class="event-info"><i class="fa-regular fa-calendar"></i> ${event.date}</div>
+                        <div class="event-info"><i class="fa-solid fa-location-dot"></i> ${event.location}</div>
+                        <div class="event-price">${event.price}</div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // ADD NEW EVENT
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const newEvent = {
+                id: events.length + 1,
+                title: document.getElementById('event-title').value,
+                category: document.getElementById('event-category').value,
+                date: document.getElementById('event-date').value,
+                location: document.getElementById('event-location').value,
+                price: document.getElementById('event-price').value,
+                image: document.getElementById('event-image').value,
+                status: 'pending' // Directs to Admin Approval
+            };
+
+            events.push(newEvent);
+            alert('Ваше событие успешно отправлено на модерацию администратору!');
+            document.getElementById('add-event-form').reset();
+            switchTab('calendar-section');
+            renderCalendar();
+        }
+
+        // ADMIN PANEL LOGIC
+        function renderAdminPanel() {
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '';
+
+            // Stats
+            document.getElementById('stat-total').innerText = events.length;
+            document.getElementById('stat-pending').innerText = events.filter(e => e.status === 'pending').length;
+            document.getElementById('stat-approved').innerText = events.filter(e => e.status === 'approved').length;
+
+            events.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${e.title}</strong><br><small style="color: var(--gray);">${e.location}</small></td>
+                    <td>${e.category}</td>
+                    <td>${e.date}</td>
+                    <td>
+                        <span class="badge ${e.status === 'approved' ? 'badge-approved' : 'badge-pending'}">
+                            ${e.status === 'approved' ? 'Опубликовано' : 'На модерации'}
+                        </span>
+                    </td>
+                    <td>
+                        ${e.status === 'pending' ? `<button class="btn btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="approveEvent(${e.id})"><i class="fa-solid fa-check"></i> Одобрить</button>` : ''}
+                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="deleteEvent(${e.id})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function approveEvent(id) {
+            const evt = events.find(item => item.id === id);
+            if (evt) {
+                evt.status = 'approved';
+                renderAdminPanel();
+                renderCalendar();
+                renderEvents();
+            }
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(item => item.id !== id);
+            renderAdminPanel();
+            renderCalendar();
+            renderEvents();
+        }
+
+        // INIT
+        renderCalendar();
+        renderEvents();
+    </script>
+</body>
+</html>
